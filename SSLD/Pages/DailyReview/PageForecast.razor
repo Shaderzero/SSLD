@@ -1,0 +1,127 @@
+﻿@page "/dailyreview/forecast"
+@using SSLD.Data.DailyReview
+
+<div class="row">
+    <div class="col-6 d-flex justify-content-start">
+        <h1>Прогноз поставок</h1>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+    </div>
+</div>
+<RadzenDataGrid @ref="_entitiesGrid" AllowColumnResize="true"
+                Data="_entities" TItem="Forecast" ExpandMode="DataGridExpandMode.Single" RowExpand="RowExpand"
+                @bind-Value="_selectedForecast"
+                EditMode="DataGridEditMode.Single" RowUpdate="OnUpdateRow" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+    <Template>
+        <div>
+            <table class="table table-sm" style="width: 100%; font-size: smaller;">
+                <thead>
+                <tr class="text-center">
+                    <th>Наименование</th>
+                    <th>Год</th>
+                    <th>Январь</th>
+                    <th>Февраль</th>
+                    <th>Март</th>
+                    <th>I квартал</th>
+                    <th>Апрель</th>
+                    <th>Май</th>
+                    <th>Июнь</th>
+                    <th>II квартал</th>
+                    <th>Июль</th>
+                    <th>Август</th>
+                    <th>Сентябрь</th>
+                    <th>III квартал</th>
+                    <th>Октябрь</th>
+                    <th>Ноябрь</th>
+                    <th>Декабрь</th>
+                    <th>IV квартал</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in _tableItems)
+                {
+                    <tr class="text-end @(item.IsDir() ? "fw-bold" : "")">
+                        <td class="text-start">@item.Name</td>
+                        <td>@Math.Round(item.Year, 1)</td>
+                        <td>@Math.Round(item.January, 1)</td>
+                        <td>@Math.Round(item.February, 1)</td>
+                        <td>@Math.Round(item.March, 1)</td>
+                        <td>@Math.Round(item.QuarterOne, 1)</td>
+                        <td>@Math.Round(item.April, 1)</td>
+                        <td>@Math.Round(item.May, 1)</td>
+                        <td>@Math.Round(item.June, 1)</td>
+                        <td>@Math.Round(item.QuarterTwo, 1)</td>
+                        <td>@Math.Round(item.July, 1)</td>
+                        <td>@Math.Round(item.August, 1)</td>
+                        <td>@Math.Round(item.September, 1)</td>
+                        <td>@Math.Round(item.QuarterThree, 1)</td>
+                        <td>@Math.Round(item.October, 1)</td>
+                        <td>@Math.Round(item.November, 1)</td>
+                        <td>@Math.Round(item.December, 1)</td>
+                        <td>@Math.Round(item.QuarterFour, 1)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </Template>
+    <Columns>
+        <RadzenDataGridColumn Width="70px" TItem="Gis" Property="Id" Title="ID"/>
+        <RadzenDataGridColumn TItem="Forecast" Property="Name" Title="Наименование">
+            <EditTemplate Context="forecast">
+                <RadzenTextBox @bind-Value="forecast.Name" Style="width:100%; display: block" Name="наименование..."/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Forecast" Property="Fullname" Title="развернуто...">
+            <EditTemplate Context="forecast">
+                <RadzenTextBox @bind-Value="forecast.Fullname" Style="width:100%; display: block"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Forecast" Property="ReportDate" Title="Дата загрузки" FormatString="{0:dd.MM.yy}">
+            <EditTemplate Context="val">
+                <RadzenDatePicker @bind-Value="val.ReportDateTime" DateFormat="dd.MM.yy"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Forecast" Property="ForecastYear.Year" Title="Год">
+            <EditTemplate Context="val">
+                <RadzenNumeric @bind-Value="val.ForecastYear.Year"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Forecast" Property="InDayReview" Title="В оперативке">
+            <Template Context="val">
+                @if (val.InDayReview)
+                {
+                    <RadzenIcon Style="font-size: 1em;" Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="val">
+                <RadzenCheckBox @bind-Value="val.InDayReview"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Forecast" Property="InMain" Title="Основной">
+            <Template Context="val">
+                @if (val.InMain)
+                {
+                    <RadzenIcon Style="font-size: small;" Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="val">
+                <RadzenCheckBox @bind-Value="val.InMain"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn CssClass="" TextAlign="TextAlign.Center" TItem="Forecast" Filterable="false" Sortable="false" Width="70px">
+            <Template Context="forecast">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(() => EditEntity(forecast))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteEntity(forecast))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="forecast">
+                <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@(() => Save(forecast))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(() => CancelEdit(forecast))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>

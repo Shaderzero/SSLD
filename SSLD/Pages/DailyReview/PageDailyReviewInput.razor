@@ -1,0 +1,63 @@
+﻿@page "/dailyreview/input"
+@using SSLD.DTO
+@using SSLD.Parsers.Excel
+
+<div class="row m-0">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-title" style="height: 50px;">
+                    <div class="row">
+                        <div class="col-4">
+                            <h3>
+                                Загрузка данных
+                                @if (_isReady)
+                                {
+                                    <span>
+                                        <b>готово</b>
+                                    </span>
+                                }
+                            </h3>
+                        </div>
+                        <div class="col-4">
+                            <RadzenCheckBox @bind-Value="@_isForced" Name="cbForce" TValue="bool" />
+                            <RadzenLabel Text="Принудительно" Component="cbForce" />
+                        </div>
+                        <div class="col-4">
+                            <InputFile OnChange="@LoadExcelFiles" accept=".xlsx, .xlsm, .xls" multiple/>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-text">
+                    <RadzenDataGrid AllowColumnResize="true" AllowFiltering="false" AllowPaging="false"
+                                    AllowSorting="true" Data="@_parserResults" TItem="ParserResult"
+                                    Style="height: calc(100vh - 150px); overflow-y: auto;">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="ParserResult" Property="Filename" Title="Файл"/>
+                            <RadzenDataGridColumn TItem="ParserResult" Title="Статус">
+                                <Template Context="result">
+                                    @if (_currentFile == result.Filename)
+                                    {
+                                        <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+                                    }
+                                    else if (result.Messages is {Count: > 0 })
+                                    {
+                                        @foreach (var message in result.Messages)
+                                        {
+                                            @message<br>
+                                        }
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Width="100px" TItem="ParserResult" Property="SendedCount" Title="Отправлено"/>
+                            <RadzenDataGridColumn Width="100px" TItem="ParserResult" Property="CreatedCount" Title="Создано"/>
+                            <RadzenDataGridColumn Width="100px" TItem="ParserResult" Property="UpdatedCount" Title="Обновлено"/>
+                        </Columns>
+                    </RadzenDataGrid>
+                </div>
+            </div>
+            <div class="card-footer p-0">
+            </div>
+        </div>
+    </div>
+</div>

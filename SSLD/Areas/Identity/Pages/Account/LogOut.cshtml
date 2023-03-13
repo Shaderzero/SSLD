@@ -1,0 +1,56 @@
+﻿@page
+@model LogoutModel
+
+@{
+    ViewData["Title"] = "Log out";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="SSLD.styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="_content/Radzen.Blazor/css/default.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light navbar-toggleable-sm bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" href="~/">ССЛД</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <div>
+        <h1>@ViewData["Title"]</h1>
+        @{
+            if (User.Identity.IsAuthenticated)
+            {
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                    <button type="submit" class="nav-link btn btn-link text-dark">Click here to Logout</button>
+                </form>
+            }
+            else
+            {
+                <p>You have successfully logged out of the application.</p>
+            }
+        }
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/jquery-3.6.0.min.js"></script>
+</body>
+</html>
+
+@* @section Scripts { *@
+@* <partial name="_ValidationScriptsPartial" /> *@
+@* } *@
+

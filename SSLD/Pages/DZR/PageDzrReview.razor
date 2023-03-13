@@ -1,0 +1,252 @@
+﻿@page "/PageDzrReview"
+@using SSLD.Data.DZZR
+@using SSLD.DTO
+@using SSLD.Tools
+
+<div class="input-group mb-3">
+    <span class="input-group-text">Направления</span>
+    <RadzenDropDown AllowClear="false" AllowFiltering="false" Data="@_gises" @bind-Value="@_selectedGisId"
+                    TextProperty="Name" ValueProperty="Id" Change="@(SelectGis)"/>
+    <span class="input-group-text">Период</span>
+    <RadzenDatePicker @bind-Value="@_startDate" DateFormat="dd.MM.yyyy" Style="height: 100%;"/>
+    <RadzenDatePicker @bind-Value="@_finishDate" DateFormat="dd.MM.yyyy"/>
+    <RadzenButton ButtonStyle="ButtonStyle.Primary" Text="Сформировать" Click="@Run"/>
+    <RadzenButton ButtonStyle="ButtonStyle.Secondary" Text="Export XLS" Click="@ExportToExcel"/>
+</div>
+<div class="row mb-3" style="height: calc(50vh - 4rem);">
+    <div class="col-12">
+        <div class="row mx-0" style="@ChartSize()">
+            <div class="card">
+                @if (_chartFs)
+                {
+                    <div class="card-header">@_selectedGis.Name за период с @_startDate по @_finishDate</div>
+                }
+                <div class="card-body">
+                    <div class="row mx-0 h-100">
+                        <div class="col-1">
+                            <RadzenButton ButtonStyle="ButtonStyle.Light"
+                                          Icon="@(_chartFs ? "close_fullscreen" : "open_in_full")"
+                                          Click="@(() => _chartFs = !_chartFs)"/>
+                            <div class="row h-100">
+                                <RadzenCheckBoxList @bind-Value=@_types TValue="int" Orientation="Orientation.Vertical" Style="align-self: center;">
+                                    <Items>
+                                        <RadzenCheckBoxListItem Text="ДЗ" Value="1" Style="color: green;"/>
+                                        <RadzenCheckBoxListItem Text="ЗР" Value="2" Style="color: blue;"/>
+                                    </Items>
+                                </RadzenCheckBoxList>
+                            </div>
+                        </div>
+                        <div class="col-11">
+                            @* <RadzenChart Style="height: 90%;"> *@
+                            <RadzenChart Style="height: 100%;">
+                                @if (_types.Contains(2))
+                                {
+                                    <RadzenLineSeries Data="@_zrItems" CategoryProperty="Date" Title="ЗР" Smooth="true"
+                                                      Stroke="green"
+                                                      LineType="LineType.Dashed" ValueProperty="Value">
+                                        <RadzenMarkers MarkerType="MarkerType.Square"/>
+                                        @* <RadzenLegend Position="LegendPosition.Top"/> *@
+                                    </RadzenLineSeries>
+                                }
+                                @if (_types.Contains(1))
+                                {
+                                    <RadzenLineSeries Data="@_dzItems" CategoryProperty="Date" Title="ДЗ" Smooth="true"
+                                                      Stroke="blue"
+                                                      ValueProperty="Value">
+                                        <RadzenMarkers MarkerType="MarkerType.Circle"/>
+                                        @* <RadzenLegend Position="LegendPosition.Bottom"/> *@
+                                    </RadzenLineSeries>
+                                }
+                                <RadzenCategoryAxis FormatString="{0:dd.MM HH:mm}"/>
+                                <RadzenValueAxis Formatter="@FormatValue">
+                                    <RadzenGridLines Visible="true"/>
+                                    <RadzenAxisTitle Text="Объем"/>
+                                </RadzenValueAxis>
+
+                            </RadzenChart>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mx-0" style="height: calc(50vh - 4rem);">
+    @if (_showOverall == false)
+    {
+        <RadzenDataGrid IsLoading="@_loading" AllowSorting="true" Data="@_resources" TItem="OperatorResource" Style="height: calc(50vh - 4rem); overflow-y: auto; overflow-x: auto; padding: 0;">
+            <Columns>
+                <RadzenDataGridColumn Width="45px" TItem="OperatorResource" Property="SupplyDate" Title="Дата поставки" FormatString="{0:dd.MM.yy}"/>
+                <RadzenDataGridColumn Width="35px" TItem="OperatorResource" Property="ReportDate" Title="Ревизия" FormatString="{0:dd.MM HH:mm}"/>
+                <RadzenDataGridColumn Width="15px" Sortable="false" TItem="OperatorResource" Property="Type" Title="Тип">
+                    <Template Context="val">
+                        @if (val.Type == OperatorResourceType.Dz)
+                        {
+                            <span style="color: green;">ДЗ</span>
+                        }
+                        else if (val.Type == OperatorResourceType.Zr)
+                        {
+                            <span style="color: blue;">ЗР</span>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="30px" TItem="OperatorResource" Title="Объём">
+                    <Template Context="val">
+                        @Math.Round(val.Hours.Sum(x => x.Volume), 1)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(1)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 1)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(2)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 2)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(3)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 3)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(4)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 4)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(5)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 5)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(6)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 6)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(7)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 7)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(8)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 8)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(9)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 9)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(10)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 10)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(11)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 11)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(12)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 12)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(13)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 13)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(14)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 14)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(15)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 15)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(16)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 16)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(17)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 17)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(18)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 18)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(19)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 19)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(20)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 20)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(21)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 21)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(22)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 22)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(23)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 23)
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Sortable="false" Width="@HourWidth" TItem="OperatorResource" Title="@StringParser.IntToCevTime(24)">
+                    <Template Context="val">
+                        @GetValueOnHour(val, 24)
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    }
+    else
+    {
+        <RadzenDataGrid IsLoading="@_loading" Data="@_sResources" TItem="OperatorResourceOnDate" Style="height: calc(50vh - 4rem); overflow-y: auto; overflow-x: scroll; padding: 0;">
+            <Columns>
+                <RadzenDataGridColumn Width="100px" TItem="OperatorResourceOnDate" Property="SupplyDate" Title="Дата поставки" FormatString="{0:dd.MM.yy}"/>
+                <RadzenDataGridColumn Width="50px" Sortable="false" TItem="OperatorResourceOnDate" Property="Type" Title="Тип">
+                    <Template Context="val">
+                        @if (val.Type == OperatorResourceType.Dz)
+                        {
+                            <span style="color: green;">ДЗ</span>
+                        }
+                        else if (val.Type == OperatorResourceType.Zr)
+                        {
+                            <span style="color: blue;">ЗР</span>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                @foreach (var gis in _gises)
+                {
+                    <RadzenDataGridColumn TItem="OperatorResourceOnDate" Property="Operators" Title="@gis.Name">
+                        <Template Context="val">
+                            @if (val.Operators.FirstOrDefault(x => x.OperatorGis.Id == gis.Id) != null)
+                            {
+                                <span>@Math.Round((val.Operators.FirstOrDefault(x => x.OperatorGis.Id == gis.Id)!.Volume), 3)</span>
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>
+                }
+            </Columns>
+        </RadzenDataGrid>
+    }
+</div>

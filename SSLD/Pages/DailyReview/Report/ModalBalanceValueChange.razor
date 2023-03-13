@@ -1,0 +1,36 @@
+﻿<span>@Title</span>
+<div class="row mt-2">
+    <label for="oldValue" class="col-6 col-form-label">Текущее значение</label>
+    <div class="col-6">
+        <RadzenNumeric id="oldValue" @bind-Value="@Value" Disabled="true"/>
+    </div>
+</div>
+<div class="row mt-2">
+    <label for="newValue" class="col-6 col-form-label">Новое значение</label>
+    <div class="col-6">
+        <RadzenNumeric id="newValue" @bind-Value="@NewValue"/>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-12 text-right">
+        <RadzenButton Click="@(() => DialogService.Close(false))" ButtonStyle="ButtonStyle.Secondary" Text="Отмена" Class="mr-1"/>
+        <RadzenButton Click="@(() => DialogService.Close(NewValue))" Text="Сохранить"/>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public double Value { get; set; }
+
+    [Parameter]
+    public double NewValue { get; set; }
+
+    [Inject]
+    public DialogService DialogService { get; set; }
+
+
+}

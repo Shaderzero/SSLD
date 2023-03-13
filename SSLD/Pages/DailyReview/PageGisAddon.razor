@@ -1,0 +1,93 @@
+﻿@page "/references/gisaddon"
+@using SSLD.Data.DailyReview
+@using SSLD.Pages.Shared
+
+
+<div class="row">
+    <div class="col-6 d-flex justify-content-start">
+        <h1>ПХГ</h1>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+        <RadzenButton Icon="add_circle_outline" class="align-self-center my-1" ButtonStyle="ButtonStyle.Success" Text="Add" Click="InsertAddon" Disabled="!_watchMode"/>
+    </div>
+</div>
+<RadzenDataGrid @ref="_addonsGrid" AllowColumnResize="true"
+                AllowSorting="_watchMode" Data="_addons" TItem="GisAddon" ExpandMode="DataGridExpandMode.Single" RowExpand="RowExpand"
+                @bind-Value="_selectedAddon" RowSelect="@OnSelect"
+                EditMode="DataGridEditMode.Single" RowUpdate="OnUpdateAddon" RowCreate="OnCreateAddon" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+
+    <Template Context="addon">
+        <div class="row">
+            <ComponentNameObject Title="Наименования"
+                                 Names="@_names"
+                                 @bind-WatchMode="_watchMode"
+                                 SaveValue="@SaveAddonName"/>
+        </div>
+    </Template>
+    <Columns>
+        <RadzenDataGridColumn TItem="GisAddon" Property="Gis.Name" Title="Направление">
+            <EditTemplate Context="a">
+                <RadzenDropDown @bind-Value="a.GisId" AllowClear="true" Placeholder="выберите направление..."
+                                Data="@_gises" style="width: 100%; display: block;" TextProperty="Name" ValueProperty="Id" Name="Направление">
+                </RadzenDropDown>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="GisAddon" Property="Name" Title="Наименование">
+            <EditTemplate Context="a">
+                <RadzenTextBox @bind-Value="a.Name" Style="width:100%; display: block" Name="наименование..."/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="GisAddon" Property="DailyReviewName" Title="Оперативка">
+            <EditTemplate Context="a">
+                <RadzenTextBox @bind-Value="a.DailyReviewName" Style="width:100%; display: block"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Width="100px" TItem="GisAddon" Filterable="false" Sortable="false" Property="IsHidden" Title="Скрыть">
+            <Template Context="a">
+                @if (a.IsHidden)
+                {
+                    <RadzenIcon Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="a">
+                <RadzenCheckBox @bind-Value="a.IsHidden" style="display: block;"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Width="100px" TItem="GisAddon" Filterable="false" Sortable="false" Property="IsInput" Title="Закачка">
+            <Template Context="a">
+                @if (a.IsInput)
+                {
+                    <RadzenIcon Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="a">
+                <RadzenCheckBox @bind-Value="a.IsInput" style="display: block;"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Width="100px" TItem="GisAddon" Filterable="false" Sortable="false" Property="IsOutput" Title="Отбор">
+            <Template Context="a">
+                @if (a.IsOutput)
+                {
+                    <RadzenIcon Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="a">
+                <RadzenCheckBox @bind-Value="a.IsOutput" style="display: block;"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="GisAddon" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+            <Template Context="a">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditAddon(a))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteAddon(a))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="a">
+                <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveAddon(a))">
+                </RadzenButton>
+                <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEditAddon(a))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>

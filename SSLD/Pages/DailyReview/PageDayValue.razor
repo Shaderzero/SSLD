@@ -1,0 +1,84 @@
+@using SSLD.Data.DailyReview
+@using System.Globalization
+
+<div class="row">
+    <div class="col-9 d-flex justify-content-start">
+        <h1>@Name</h1>
+    </div>
+    <div class="col-3 d-flex justify-content-end">
+        @if (IsEditable)
+        {
+            <RadzenButton ButtonStyle="ButtonStyle.Primary" class="align-self-center" Click="@InsertValue" Text="Добавить"/>
+        }
+        <RadzenButton ButtonStyle="ButtonStyle.Secondary" class="align-self-center ml-2" Click="@ExportToExcel" Text="Excel" />
+    </div>
+</div>
+
+<RadzenDataGrid @ref="_valuesGrid" AllowColumnResize="true" AllowFiltering="true" AllowPaging="true"
+                PageSize="25" AllowSorting="true" Data="@Values" TItem="DayValue"
+                EditMode="DataGridEditMode.Single" RowCreate="@OnCreateValue" Style="height: calc(100vh - 180px); overflow-y: auto;">
+    <Columns>
+        <RadzenDataGridColumn TItem="DayValue" Property="ReportDate" Title="Дата" FormatString="{0:dd.MM.yy}">
+            <EditTemplate Context="val">
+                <RadzenDatePicker @bind-Value="val.ReportDateTime" DateFormat="dd.MM.yy"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="DayValue" Property="RequestedValue" Title="Заявлено">
+            <Template Context="val">
+                <div @onclick="() => ShowValueInfo(val.RequestedValueTimeId)">
+                    @Math.Round(val.RequestedValue, 4)
+                </div>
+            </Template>
+            <EditTemplate Context="val">
+                <RadzenTextBox Value="@val.RequestedValue.ToString(CultureInfo.CurrentCulture)" Style="width:100%; display: block" ValueChanged="args => OnChange(val, 1, args)"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="DayValue" Property="AllocatedValue" Title="Выделено">
+            <Template Context="val">
+                <div @onclick="() => ShowValueInfo(val.AllocatedValueTimeId)">
+                    @Math.Round(val.AllocatedValue, 4)
+                </div>
+            </Template>
+            <EditTemplate Context="val">
+                <RadzenTextBox Value="@val.AllocatedValue.ToString(CultureInfo.CurrentCulture)" Style="width:100%; display: block" ValueChanged="args => OnChange(val, 2, args)"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="DayValue" Property="EstimatedValue" Title="Оценка">
+            <Template Context="val">
+                <div @onclick="() => ShowValueInfo(val.EstimatedValueTimeId)">
+                    @Math.Round(val.EstimatedValue, 4)
+                </div>
+            </Template>
+            <EditTemplate Context="val">
+                <RadzenTextBox Value="@val.EstimatedValue.ToString(CultureInfo.CurrentCulture)" Style="width:100%; display: block" ValueChanged="args => OnChange(val, 3, args)"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="DayValue" Property="FactValue" Title="Факт">
+            <Template Context="val">
+                <div @onclick="() => ShowValueInfo(val.FactValueTimeId)">
+                    @Math.Round(val.FactValue, 4)
+                </div>
+            </Template>
+            <EditTemplate Context="val">
+                <RadzenTextBox Value="@val.FactValue.ToString(CultureInfo.CurrentCulture)" Style="width:100%; display: block" ValueChanged="args => OnChange(val, 4, args)"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        @if (IsEditable)
+        {
+            <RadzenDataGridColumn TItem="DayValue" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+                <Template Context="val">
+                    <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(() => _valuesGrid.EditRow(val))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(() => DeleteVal(val.Id))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="val">
+                    <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@(() => SaveVal(val))">
+                    </RadzenButton>
+                    <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(() => _valuesGrid.CancelEditRow(val))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        }
+    </Columns>
+</RadzenDataGrid>

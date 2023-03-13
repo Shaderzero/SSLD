@@ -1,0 +1,60 @@
+﻿@using SSLD.Data
+@using SSLD.Data.DailyReview
+@using Microsoft.EntityFrameworkCore
+
+<span>Введите новый балансовый год</span>
+<RadzenNumeric @bind-Value="@_year" Min="2000" Max="2100" Class="w-100 mb-2"/>
+<div class="row">
+    <div class="col-md-12 text-right">
+        <RadzenButton Click="@CancelSave" ButtonStyle="ButtonStyle.Secondary" Text="Отмена" Style="width: 80px" Class="mr-1"/>
+        <RadzenButton Click="@SaveYear" Text="Создать" Style="width: 80px"/>
+    </div>
+</div>
+
+@code {
+
+    [Inject]
+    public ApplicationDbContext Db { get; set; }
+    [Inject]
+    public NotificationService NotificationService { get; set; }
+
+    [Inject]
+    public DialogService DialogService { get; set; }
+
+    private int _year = 2022;
+
+    private async Task SaveYear()
+    {
+        Console.WriteLine(_year);
+        var exist = await Db.ForecastYears.AnyAsync(x => x.Year == _year);
+        if (exist)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "",
+                Detail = "Прогнозный баланс на " + _year + " уже существует",
+                Duration = 3000
+            });
+            CancelSave();
+        }
+        else
+        {
+            var fy = new ForecastYear()
+            {
+                Year = _year
+            };
+            Db.ForecastYears.Add(fy);
+            await Db.SaveChangesAsync();
+            DialogService.Close(true);
+            DialogService.Dispose();
+        }
+    }
+
+    private void CancelSave()
+    {
+        DialogService.Close(false);
+        DialogService.Dispose();
+    }
+
+}

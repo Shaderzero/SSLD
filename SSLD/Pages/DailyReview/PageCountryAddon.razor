@@ -1,0 +1,118 @@
+﻿@page "/references/countryaddon"
+@using Microsoft.AspNetCore.Components
+@using SSLD.Data.DailyReview
+@using SSLD.Pages.Shared
+
+
+<div class="row">
+    <div class="col-6 d-flex justify-content-start">
+        <h1>ГПШ</h1>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+        <RadzenButton Icon="add_circle_outline" class="align-self-center my-1" ButtonStyle="ButtonStyle.Success" Text="Add" Click="InsertAddon" Disabled="!_watchMode"/>
+    </div>
+</div>
+<RadzenDataGrid @ref="_addonsGrid" AllowColumnResize="true"
+                AllowSorting="_watchMode" Data="_addons" TItem="GisCountryAddon" ExpandMode="DataGridExpandMode.Single" RowExpand="RowExpand"
+                @bind-Value="_selectedAddon" RowSelect="@OnSelectRow"
+                EditMode="DataGridEditMode.Single" RowUpdate="OnUpdateRow" RowCreate="OnCreateRow" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+
+    <Template Context="addon">
+        <div class="row">
+            <div class="col-md-6">
+                <ComponentNameObject Title="Наименования"
+                                     Names="@_names"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveNames"/>
+            </div>
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-6 d-flex justify-content-start">
+                        <h5 class="m-2">Учет</h5>
+                    </div>
+                    <div class="col-6 d-flex justify-content-end">
+                        <RadzenButton Icon="add_circle_outline" class="align-self-center" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small" Text="Add"
+                                      Click="@InsertAddonType" Disabled="!_watchMode"/>
+                    </div>
+                </div>
+                <RadzenDataGrid @ref="_addonTypesGrid" AllowFiltering="true" AllowPaging="true" PageSize="10" AllowColumnResize="true" AllowSorting="_watchMode"
+                                Data="@(_addonTypes)" TItem="GisCountryAddonType"
+                                EditMode="DataGridEditMode.Single" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="GisCountryAddonType" Property="StartDate" Title="Дата отсчёта" FormatString="{0:dd.MM.yy}">
+                            <EditTemplate Context="val">
+                                <RadzenDatePicker @bind-Value="@val.StartDateTime" DateFormat="dd.MM.yyyy"/>
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TextAlign="TextAlign.Center" Width="100px" TItem="GisCountryAddonType" Property="IsCommGas" Filterable="false" Sortable="false" Title="Считать">
+                            <Template Context="val">
+                                @if (val.IsCommGas)
+                                {
+                                    <RadzenIcon Style="font-size: 1em;" Icon="done"/>
+                                }
+                            </Template>
+                            <EditTemplate Context="val">
+                                <RadzenCheckBox @bind-Value="val.IsCommGas"/>
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="GisCountryAddonType" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+                            <Template Context="val">
+                                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(() => EditRow(val))" @onclick:stopPropagation="true">
+                                </RadzenButton>
+                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(() => DeleteRow(val))" @onclick:stopPropagation="true">
+                                </RadzenButton>
+                            </Template>
+                            <EditTemplate Context="val">
+                                <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@(() => SaveRow(val))">
+                                </RadzenButton>
+                                <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(() => CancelEdit(val))">
+                                </RadzenButton>
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </div>
+        </div>
+    </Template>
+    <Columns>
+        <RadzenDataGridColumn TItem="GisCountryAddon" Property="GisCountry.Gis.Name" Title="Направление">
+            <EditTemplate Context="addon">
+                <RadzenDropDown @bind-Value="_selectedGis" AllowClear="true" Placeholder="выберите направление..."
+                                Data="@_gises" style="width: 100%; display: block;" TextProperty="Name"
+                                Change="@(() => OnChangeGis(_selectedGis))">
+                </RadzenDropDown>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="GisCountryAddon" Property="GisCountry.Country.Name" Title="Страна">
+            <EditTemplate Context="addon">
+                <RadzenDropDown @bind-Value="addon.GisCountryId" AllowClear="true" Placeholder="выберите страну..."
+                                Data="@_countries" style="width: 100%; display: block;" TextProperty="Country.Name" ValueProperty="Id">
+                </RadzenDropDown>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="GisCountryAddon" Property="Name" Title="Наименование">
+            <EditTemplate Context="a">
+                <RadzenTextBox @bind-Value="a.Name" Style="width:100%; display: block"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="GisCountryAddon" Property="DailyReviewName" Title="Оперативка">
+            <EditTemplate Context="a">
+                <RadzenTextBox @bind-Value="a.DailyReviewName" Style="width:100%; display: block"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="GisCountryAddon" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+            <Template Context="a">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditRow(a))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(a))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="a">
+                <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveRow(a))">
+                </RadzenButton>
+                <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(a))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>

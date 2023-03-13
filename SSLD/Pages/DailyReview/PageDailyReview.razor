@@ -1,0 +1,122 @@
+﻿@page "/dailyreview/review"
+@using SSLD.Data.DailyReview
+@using SSLD.Tools
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="row">
+            <div class="col-12 d-flex justify-content-start">
+                <h1>Направления</h1>
+            </div>
+        </div>
+        @if (_gises == null)
+        {
+            <p>
+                <em>Loading...</em>
+            </p>
+        }
+        else
+        {
+            <RadzenDataGrid AllowSorting="true" Data="@_gises" TItem="Gis" RowSelect="@OnSelect" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Gis" Context="gis" Property="Name" Title="Наименование"/>
+                </Columns>
+            </RadzenDataGrid>
+        }
+    </div>
+    <div class="col-md-3 px-0">
+        <div class="row">
+            <div class="col-12 d-flex justify-content-start">
+                <h1>Параметры</h1>
+            </div>
+        </div>
+        @if (_selectedGis == null)
+        {
+            <p>
+                <em>выберите направление</em>
+            </p>
+        }
+        else
+        {
+            <RadzenDataGrid AllowSorting="true" Data="@_dateRange" TItem="DateRange" Style="margin-bottom: 10px;">
+                <Columns>
+                    <RadzenDataGridColumn TItem="DateRange" Property="StartDate" Title="Начало" FormatString="{0:dd.MM.yy}">
+                        <Template Context="val">
+                            <RadzenDatePicker @bind-Value="val.StartDate" DateFormat="dd.MM.yy" Change="@OnStartDateChange" Style="width: 100%;"/>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="DateRange" Property="FinishDate" Title="Конец" FormatString="{0:dd.MM.yy}">
+                        <Template Context="val">
+                            <RadzenDatePicker @bind-Value="val.FinishDate" DateFormat="dd.MM.yy" Change="@OnFinishDateChange" Style="width: 100%;"/>
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+            @if (_specialList != null && _specialList.Any())
+            {
+                <RadzenDataGrid AllowSorting="true" Data="@_specialList" TItem="NameObject" RowSelect="@OnSelect" Style="margin-bottom: 10px;">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="NameObject" Property="Name" Title="Свод"/>
+                    </Columns>
+                </RadzenDataGrid>
+            }
+            @if (!_selectedGis.IsNoPhg && _phgList != null && _phgList.Any())
+            {
+                <RadzenDataGrid AllowSorting="true" Data="@_phgList" TItem="NameObject" RowSelect="@OnSelect" Style="margin-bottom: 10px;">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="NameObject" Property="Name" Title="ПХГ"/>
+                    </Columns>
+                </RadzenDataGrid>
+            }
+            @if (_selectedGis.Addons != null && _selectedGis.Addons.Any())
+            {
+                <RadzenDataGrid AllowSorting="true" Data="@_selectedGis.Addons" TItem="GisAddon" RowSelect="@OnSelect" Style="margin-bottom: 10px;">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="GisAddon" Property="Name" Title="ПХГ"/>
+                    </Columns>
+                </RadzenDataGrid>
+            }
+            @if (_selectedGis.Countries != null && _selectedGis.Countries.Any())
+            {
+                <RadzenDataGrid AllowSorting="true" Data="@_selectedGis.Countries" TItem="GisCountry" RowSelect="@OnSelect" Style="margin-bottom: 10px;">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="GisCountry" Property="Country.Name" Title="Страны"/>
+                    </Columns>
+                </RadzenDataGrid>
+            }
+            @if (_gisCountryAddons != null && _gisCountryAddons.Any())
+            {
+                <RadzenDataGrid AllowSorting="true" Data="@_gisCountryAddons" TItem="GisCountryAddon" RowSelect="@OnSelect">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="GisCountryAddon" Property="GisCountry.Country.Name" Title="Страна"/>
+                        <RadzenDataGridColumn TItem="GisCountryAddon" Property="Name" Title="Дополнения"/>
+                    </Columns>
+                </RadzenDataGrid>
+            }
+        }
+    </div>
+    <div class="col-md-6">
+        @switch (_show)
+        {
+            case "input":
+                <PageGisInputDetail Gis="@_selectedGis" StartDate="@_dateRange.FirstOrDefault()!.StartDate" FinishDate="@_dateRange.FirstOrDefault()!.FinishDate"/>
+                break;
+            case "output":
+                <PageGisOutputDetail Gis="@_selectedGis" StartDate="@_dateRange.FirstOrDefault()!.StartDate" FinishDate="@_dateRange.FirstOrDefault()!.FinishDate"/>
+                break;
+            case "country":
+                <PageGisCountryDetail Country="@_selectedCountry" StartDate="@_dateRange.FirstOrDefault()!.StartDate" FinishDate="@_dateRange.FirstOrDefault()!.FinishDate"/>
+                break;
+            case "addon":
+                <PageGisAddonDetail Addon="@_selectedAddon" StartDate="@_dateRange.FirstOrDefault()!.StartDate" FinishDate="@_dateRange.FirstOrDefault()!.FinishDate"/>
+                break;
+            case "countryAddon":
+                <PageGisCountryAddonDetail Addon="@_selectedCountryAddon" StartDate="@_dateRange.FirstOrDefault()!.StartDate" FinishDate="@_dateRange.FirstOrDefault()!.FinishDate"/>
+                break;
+            case "gis":
+            case "comgas":
+                <PageGisDetail Gis="@_selectedGis" type="@_show" StartDate="@_dateRange.FirstOrDefault()!.StartDate" FinishDate="@_dateRange.FirstOrDefault()!.FinishDate"/>
+                break;
+        }
+    </div>
+</div>

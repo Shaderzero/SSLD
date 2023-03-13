@@ -1,0 +1,39 @@
+﻿@using SSLD.Data.DailyReview
+@using SSLD.Tools
+
+
+<div class="row">
+    <div class="col-9 d-flex justify-content-start">
+        <h1>@Gis.Name</h1>
+    </div>
+    <div class="col-3 d-flex justify-content-end">
+        <RadzenButton Icon="cached" class="align-self-center" ButtonStyle="ButtonStyle.Primary" Text="" Click="@LoadData"/>
+        <RadzenButton Icon="get_app" class="align-self-center ml-2" ButtonStyle="ButtonStyle.Success" Click="@ExportToExcel"/>
+    </div>
+</div>
+<RadzenDataGrid AllowColumnResize="true" IsLoading="@_isLoading"
+                Data="@(_values)" TItem="DayValue" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+    <Columns>
+        <RadzenDataGridColumn TItem="DayValue" Property="ReportDate" Title="Дата" FormatString="{0:dd.MM.yy}"/>
+        <RadzenDataGridColumn TItem="DayValue" Property="RequestedValue" Title="Заявлено">
+            <Template Context="val">
+                @Math.Round(val.RequestedValue, 4)
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="DayValue" Property="AllocatedValue" Title="Выделено">
+            <Template Context="val">
+                @Math.Round(val.AllocatedValue, 4)
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="DayValue" Property="EstimatedValue" Title="Оценка">
+            <Template Context="val">
+                @Math.Round(val.EstimatedValue, 4)
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="DayValue" Property="FactValue" Title="Факт">
+            <Template Context="val">
+                @Math.Round(val.FactValue, 4)
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>

@@ -1,0 +1,186 @@
+﻿@page "/references/gis"
+@using SSLD.Data.DailyReview
+@using SSLD.Pages.Shared
+
+<div class="row">
+    <div class="col-6 d-flex justify-content-start">
+        <h1>Направления</h1>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+        <RadzenButton Icon="add_circle_outline" class="align-self-center my-1" ButtonStyle="ButtonStyle.Success" Text="Add" Click="InsertGis" Disabled="!_watchMode"/>
+    </div>
+</div>
+<RadzenDataGrid @ref="_gisGrid" AllowColumnResize="true"
+                AllowSorting="_watchMode" Data="_gises" TItem="Gis" ExpandMode="DataGridExpandMode.Single" RowExpand="RowExpand"
+                @bind-Value="_selectedGis" RowSelect="@OnSelect"
+                EditMode="DataGridEditMode.Single" RowUpdate="OnUpdateRow" RowCreate="OnCreateGis" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+
+    <Template Context="gis">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="row">
+                    <div class="col-6 d-flex">
+                        <h5 class="m-2">Страны</h5>
+                    </div>
+                    <div class="col-6 d-flex justify-content-end">
+                        <RadzenButton Icon="add_circle_outline" class="align-self-center my-1" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small" Text="Add" Click="InsertGisCountry" Disabled="!_watchMode"/>
+                    </div>
+                </div>
+                <RadzenDataGrid @ref="_gisCountryGrid" AllowFiltering="true" AllowPaging="true" PageSize="10" AllowColumnResize="true" AllowSorting="_watchMode"
+                                Data="@_gisCountries" TItem="GisCountry" RowUpdate="OnUpdateGisCountry" RowCreate="OnCreateGisCountry">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="GisCountry" Property="Country.Name" Title="Страна">
+                            <EditTemplate Context="gc">
+                                <RadzenDropDown @bind-Value="gc.CountryId" AllowClear="true" Placeholder="выберите страну..." Data="@_countries" style="width: 100%; display: block;" TextProperty="Name" ValueProperty="Id" Name="Страна">
+                                </RadzenDropDown>
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn CssClass="p-0 m-0" TItem="GisCountry" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+                            <Template Context="gc">
+                                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditGisCountry(gc))" @onclick:stopPropagation="true">
+                                </RadzenButton>
+                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteGisCountry(gc))" @onclick:stopPropagation="true">
+                                </RadzenButton>
+                            </Template>
+                            <EditTemplate Context="gc">
+                                <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveGisCountry(gc))">
+                                </RadzenButton>
+                                <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEditGisCountry(gc))">
+                                </RadzenButton>
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </div>
+            <div class="col-md-3">
+                <ComponentNameObject Title="Наименования"
+                                     Names="@_gisNames"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveGisName"/>
+            </div>
+            <div class="col-md-3">
+                <ComponentNameObject Title="Закачка в ПХГ"
+                                     Names="@_gisInputNames"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveGisInputName"/>
+            </div>
+            <div class="col-md-3">
+                <ComponentNameObject Title="Отбор из ПХГ"
+                                     Names="@_gisOutputNames"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveGisOutputName"/>
+            </div>
+        </div>
+    </Template>
+    <Columns>
+        <RadzenDataGridColumn Width="70px" TItem="Gis" Property="Id" Title="ID"/>
+        <RadzenDataGridColumn TItem="Gis" Property="Name" Title="Наименование">
+            <EditTemplate Context="gis">
+                <RadzenTextBox @bind-Value="gis.Name" Style="width:100%; display: block" Name="наименование..."/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Gis" Property="DailyReviewName" Title="Оперативка">
+            <EditTemplate Context="gis">
+                <RadzenTextBox @bind-Value="gis.DailyReviewName" Style="width:100%; display: block"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Gis" Property="DailyReviewOrder" Title="Сортировка">
+            <EditTemplate Context="gis">
+                <RadzenDropDown AllowClear="false" TValue="int" Style="width:100%; display: block"
+                                Data="_gisOrder"
+                                @bind-Value="gis.DailyReviewOrder"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn CssClass="" TextAlign="TextAlign.Center" Width="100px" TItem="Gis" Property="IsHidden" Filterable="false" Sortable="false" Title="Скрыть">
+            <Template Context="gis">
+                @if (gis.IsHidden)
+                {
+                    <RadzenIcon Style="font-size: 1em;" Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="gis">
+                <RadzenCheckBox @bind-Value="gis.IsHidden"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn CssClass="" TextAlign="TextAlign.Center" Width="100px" TItem="Gis" Property="IsNotCalculated" Filterable="false" Sortable="false" Title="Не считать">
+            <Template Context="gis">
+                @if (gis.IsNotCalculated)
+                {
+                    <RadzenIcon Style="font-size: 1em;" Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="gis">
+                <RadzenCheckBox @bind-Value="gis.IsNotCalculated"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn CssClass="" TextAlign="TextAlign.Center" Width="100px" TItem="Gis" Property="IsUkraineTransport" Filterable="false" Sortable="false" Title="Украина">
+            <Template Context="gis">
+                @if (gis.IsUkraineTransport)
+                {
+                    <RadzenIcon Style="font-size: 1em;" Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="gis">
+                <RadzenCheckBox @bind-Value="gis.IsUkraineTransport"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn CssClass="" TextAlign="TextAlign.Center" Width="100px" TItem="Gis" Property="IsTop" Filterable="false" Sortable="false" Title="Сверху">
+            <Template Context="gis">
+                @if (gis.IsTop)
+                {
+                    <RadzenIcon Style="font-size: 1em;" Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="gis">
+                <RadzenCheckBox @bind-Value="gis.IsTop"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn CssClass="" TextAlign="TextAlign.Center" Width="100px" TItem="Gis" Property="IsBottom" Filterable="false" Sortable="false" Title="Снизу">
+            <Template Context="gis">
+                @if (gis.IsBottom)
+                {
+                    <RadzenIcon Style="font-size: 1em;" Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="gis">
+                <RadzenCheckBox @bind-Value="gis.IsBottom"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn CssClass="" TextAlign="TextAlign.Center" Width="100px" TItem="Gis" Property="IsOneRow" Filterable="false" Sortable="false" Title="Одна строка">
+            <Template Context="gis">
+                @if (gis.IsOneRow)
+                {
+                    <RadzenIcon Style="font-size: 1em;" Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="gis">
+                <RadzenCheckBox @bind-Value="gis.IsOneRow"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn CssClass="" TextAlign="TextAlign.Center" Width="100px" TItem="Gis" Property="IsNoPhg" Filterable="false" Sortable="false" Title="Без ПХГ">
+            <Template Context="gis">
+                @if (gis.IsNoPhg)
+                {
+                    <RadzenIcon Style="font-size: 1em;" Icon="done"/>
+                }
+            </Template>
+            <EditTemplate Context="gis">
+                <RadzenCheckBox @bind-Value="gis.IsNoPhg"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn CssClass="" TextAlign="TextAlign.Center" TItem="Gis" Filterable="false" Sortable="false" Width="70px">
+            <Template Context="gis">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditGis(gis))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteGis(gis))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="gis">
+                <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveGis(gis))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEditGis(gis))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>

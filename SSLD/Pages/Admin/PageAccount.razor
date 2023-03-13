@@ -1,0 +1,74 @@
+﻿@page "/admin/account"
+@using SSLD.Tools
+@using Microsoft.AspNetCore.Components
+
+<div class="row">
+    <div class="col-6 d-flex justify-content-start">
+        <h1>Пользователи</h1>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+        <RadzenButton Icon="add_circle_outline" class="align-self-center" style="margin-bottom: 10px" ButtonStyle="ButtonStyle.Primary" Text="Add" Click="@InsertRow" />
+    </div>
+</div>
+
+@if (_users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12 pl-2 pr-1">
+
+            <RadzenDataGrid @ref="_usersGrid" AllowColumnResize="true" AllowFiltering="true" AllowPaging="true"
+                        PageSizeOptions="@_pageSizeOptions" PageSize="20" AllowSorting="true" Data="@_users" TItem="User"
+                        EditMode="DataGridEditMode.Single" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow" Context="user">
+                <Columns>
+                    <RadzenDataGridColumn TItem="User" Property="Id" Title="ID" />
+                    <RadzenDataGridColumn TItem="User" Property="Name" Title="Имя">
+                        <EditTemplate Context="user">
+                            <RadzenTextBox @bind-Value="user.Name" Name="имя..." />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="User" Property="Email" Title="e-mail">
+                        <EditTemplate Context="user">
+                            <RadzenTextBox @bind-Value="user.Email" Name="email..." />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="User" Title="Роли">
+                        <Template Context="user">
+                            @foreach (var role in user.Roles)
+                            {
+                                <RadzenCheckBox @bind-Value=@role.IsSelected TValue="bool" Disabled="true"/>
+                                <RadzenLabel Text="@role.Name" Style="margin-left: 5px; margin-right: 10px;" />
+                            }
+                        </Template>
+                        <EditTemplate Context="user">
+                            @foreach (var role in user.Roles)
+                            {
+                                <RadzenCheckBox @bind-Value=@role.IsSelected TValue="bool" Disabled="false"/>
+                                <RadzenLabel Text="@role.Name" Style="margin-left: 5px; margin-right: 10px;" />
+                            }
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="User" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
+                        <Template Context="user">
+                            <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(() => EditRow(user))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                            @*<RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="autorenew" Size="ButtonSize.Small" Click="@(args => ResetPassword(user))" @onclick:stopPropagation="true" tooltip="Reset Password"/>*@
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="autorenew" Size="ButtonSize.Small" Click="@(() => SetPassword(user))" @onclick:stopPropagation="true" tooltip="Set Password"/>
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(() => DeleteRow(user))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                        </Template>
+                        <EditTemplate Context="user">
+                            <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@(() => SaveRow(user))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                            <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(() => CancelEdit(user))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    </div>
+}

@@ -1,0 +1,41 @@
+﻿@using SSLD.Tools
+@inject NavigationManager UriHelper
+
+<RadzenCard class="vertical-nav">
+    <RadzenPanelMenu>
+        <RadzenPanelMenuItem Text="ССЛД" Icon="home" Path="/"></RadzenPanelMenuItem>
+        <AuthorizeView>
+            <Authorized>
+                <RadzenPanelMenuItem Text="@context.User.Identity.Name?.Split('@')[0]">
+                    <RadzenPanelMenuItem Text="Logout" Path="identity/account/logout" Icon="logout"></RadzenPanelMenuItem>
+                    <RadzenPanelMenuItem Text="Сменить пароль" Path="changepassword" Icon="manage_accounts"></RadzenPanelMenuItem>
+                </RadzenPanelMenuItem>
+            </Authorized>
+            <NotAuthorized>
+                <RadzenPanelMenuItem Text="Login" Path="identity/account/login" Icon="login"></RadzenPanelMenuItem>
+            </NotAuthorized>
+        </AuthorizeView>
+        <RadzenPanelMenuItem Text="Справочники" Icon="folder">
+            <RadzenPanelMenuItem Text="Страны" Path="references/country"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="ГПШ" Path="references/countryaddon"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="Направления" Path="references/gis"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="ГИСы" Path="references/operatorgis"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="ПХГ" Path="references/gisaddon"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="Типы файлов" Path="references/filetypesetting"></RadzenPanelMenuItem>
+        </RadzenPanelMenuItem>
+        <RadzenPanelMenuItem Text="Оперативка" Icon="auto_awesome_mosaic">
+            <RadzenPanelMenuItem Text="Отчет" Path="dailyreview/report"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="Обзор" Path="dailyreview/review"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="ДЗ - ЗР" Path="PageDzrReview"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="Прогнозы" Path="dailyreview/forecast"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="Балансы" Path="dailyreview/reportbalance"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="График" Path="dailyreview/giscountryforecast"></RadzenPanelMenuItem>
+            <RadzenPanelMenuItem Text="Подшивка" Path="dailyreview/input"></RadzenPanelMenuItem>
+        </RadzenPanelMenuItem>
+        <AuthorizeView Roles=@SD.Role_Admin>
+            <RadzenPanelMenuItem Text="Админ" Icon="admin_panel_settings">
+                <RadzenPanelMenuItem Text="Пользователи" Path="admin/account" Icon="manage_accounts"></RadzenPanelMenuItem>
+            </RadzenPanelMenuItem>
+        </AuthorizeView>
+    </RadzenPanelMenu>
+</RadzenCard>

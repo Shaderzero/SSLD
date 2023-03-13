@@ -1,0 +1,48 @@
+﻿@page "/dzrinput"
+
+<div class="row m-0">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex card-title" style="height: 50px;">
+                    <div class="mx-auto justify-content-center">
+                        <h3>Загрузка данных</h3>
+                        @if (_isReady)
+                        {
+                            <span class="align-content-end">готово</span>
+                        }
+                    </div>
+                    <div class="justify-content-end">
+                        <InputFile OnChange="@LoadExcelFiles" accept=".xlsx, .xlsm, .xls" multiple />
+                    </div>
+                </div>
+                <div class="card-text">
+                    <RadzenDataGrid AllowColumnResize="true" AllowFiltering="false" AllowPaging="false"
+                                    AllowSorting="true" Data="@_messages" TItem="FileMessage"
+                                    Style="height: calc(100vh - 150px); overflow-y: auto;">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="FileMessage" Property="Filename" Title="Файл" />
+                            <RadzenDataGridColumn TItem="FileMessage" Property="Message" Title="Статус">
+                                <Template Context="status">
+                                    @if (_currentFile == status.Filename)
+                                        {
+                                            <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                                        }
+                                    else if (!string.IsNullOrEmpty(status.Message))
+                                    {
+                                        <span>@status.Message</span>
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Width="100px" TItem="FileMessage" Property="SendedCount" Title="Отправлено" />
+                            <RadzenDataGridColumn Width="100px" TItem="FileMessage" Property="CreatedCount" Title="Создано" />
+                            <RadzenDataGridColumn Width="100px" TItem="FileMessage" Property="UpdatedCount" Title="Обновлено" />
+                        </Columns>
+                    </RadzenDataGrid>
+                </div>
+            </div>
+            <div class="card-footer p-0">
+            </div>
+        </div>
+    </div>
+</div>

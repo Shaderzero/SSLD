@@ -1,0 +1,17 @@
+﻿<div>
+    <span class="mb-2">@Title</span>
+    <div class="row mt-4">
+        <div class="col-12 text-right">
+            <RadzenButton Click="@(() => DialogService.Close(null))" ButtonStyle="ButtonStyle.Secondary" Text="Отмена" Class="mr-1"/>
+            <RadzenButton Click="@(() => DialogService.Close("change"))" Text="Изменить" Class="mr-1"/>
+            <RadzenButton Click="@(() => DialogService.Close("update"))" Text="Обновить"/>
+        </div>
+    </div>
+</div>
+
+
+@code
+{
+    [Parameter] public string Title { get; set; }
+    [Inject] public DialogService DialogService { get; set; }
+}

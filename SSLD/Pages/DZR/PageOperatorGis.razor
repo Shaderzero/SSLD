@@ -1,0 +1,40 @@
+﻿@page "/references/operatorgis"
+@using SSLD.Data.DZZR
+
+
+<div class="row">
+    <div class="col-6 d-flex justify-content-start">
+        <h1>Направления</h1>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+        <RadzenButton Icon="add_circle_outline" class="align-self-center my-1" ButtonStyle="ButtonStyle.Success" Text="Add" Click="InsertGis" Disabled="!_watchMode" />
+    </div>
+</div>
+<RadzenDataGrid @ref="_gisGrid" AllowColumnResize="true"
+                AllowSorting="_watchMode" Data="_gises" TItem="OperatorGis" ExpandMode="DataGridExpandMode.Single" RowExpand="RowExpand"
+                @bind-Value="_selectedGis" RowSelect="@OnSelect"
+                EditMode="DataGridEditMode.Single" RowUpdate="OnUpdateGis" RowCreate="OnCreateGis" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+
+    <Columns>
+        <RadzenDataGridColumn Width="70px" TItem="OperatorGis" Property="Id" Title="ID" />
+        <RadzenDataGridColumn TItem="OperatorGis" Property="Name" Title="Наименование">
+            <EditTemplate Context="gis">
+                <RadzenTextBox @bind-Value="gis.Name" Style="width:100%; display: block" Name="наименование..." />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn CssClass="" TextAlign="TextAlign.Center" TItem="OperatorGis" Filterable="false" Sortable="false" Width="70px">
+            <Template Context="gis">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(() => EditGis(gis))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(() => DeleteGis(gis))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="gis">
+                <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@(() => SaveGis(gis))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(() => CancelEditGis(gis))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>

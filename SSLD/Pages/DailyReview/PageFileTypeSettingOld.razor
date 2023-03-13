@@ -1,0 +1,111 @@
+﻿@page "/references/filetypesettingold"
+@using SSLD.Data.DailyReview
+@using SSLD.Tools
+
+<div class="row">
+
+    <div class="col-md-6">
+        <div class="row">
+            <div class="col-6 d-flex justify-content-start">
+                <h1>Типы файлов</h1>
+            </div>
+            <div class="col-6 d-flex justify-content-end">
+                <RadzenButton Icon="add_circle_outline" class="align-self-center"
+                              ButtonStyle="ButtonStyle.Success" Text="добавить" Click="@InsertFileType"
+                              Disabled="_ftsToInsert != null" />
+            </div>
+        </div>
+        @if (_fileTypes == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <RadzenDataGrid AllowSorting="true" Data="@_fileTypes" TItem="FileTypeSetting" RowSelect="@OnSelect"
+                        @ref="_fileTypesGrid" EditMode="DataGridEditMode.Single" RowUpdate="@OnUpdateFileType" RowCreate="@OnCreateFileType">
+                <Columns>
+                    <RadzenDataGridColumn TItem="FileTypeSetting" Property="Name" Title="Наименование">
+                        <EditTemplate Context="fts">
+                            <RadzenTextBox @bind-Value="fts.Name" Style="width:100%; display: block" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="FileTypeSetting" Property="TypeName" Title="Тип">
+                        <EditTemplate Context="fts">
+                            <RadzenDropDown Data=@_typeList @bind-Value=@fts.TypeName Style="width:100%; display: block" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn CssClass="p-1 m-0" TItem="FileTypeSetting" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+                        <Template Context="fts">
+                            <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditRow(fts))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(fts))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                        </Template>
+                        <EditTemplate Context="fts">
+                            <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveRow(fts))">
+                            </RadzenButton>
+                            <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(fts))">
+                            </RadzenButton>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+    </div>
+    <div class="col-md-3 px-0">
+        <div class="row">
+            <div class="col-auto d-flex justify-content-start">
+                <h1>Параметры</h1>
+            </div>
+            <div class="col-auto d-flex justify-content-end">
+            </div>
+        </div>
+        @if (_selectedFileType != null)
+        {
+            <RadzenDataGrid Data="_typeParameters" TItem="NameObject" RowSelect="@OnSelect">
+                <Columns>
+                    <RadzenDataGridColumn TItem="NameObject" Property="Name" Title="Наименование">
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+    </div>
+    <div class="col-md-3">
+        <div class="row">
+            <div class="col-auto d-flex justify-content-start">
+                <h1>Значения</h1>
+            </div>
+            <div class="col-auto d-flex justify-content-end">
+                @if (_selectedTypeParameter != null)
+                {
+                    <RadzenButton Icon="add_circle_outline" class="align-self-center my-1" ButtonStyle="ButtonStyle.Success" Text="добавить" Click="@InsertValue" />
+                }
+            </div>
+        </div>
+        @if (_valueList != null)
+        {
+            <RadzenDataGrid Data="_valueList" TItem="NameObject"
+                        @ref="_valuesGrid" EditMode="DataGridEditMode.Single" RowCreate="@OnCreateValue">
+                <Columns>
+                    <RadzenDataGridColumn TItem="NameObject" Property="Name" Title="Наименование">
+                        <EditTemplate Context="ft">
+                            <RadzenTextBox @bind-Value="ft.Name" Style="width:100%; display: block" />
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn CssClass="p-1 m-0" TItem="NameObject" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+                        <Template Context="tp">
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(tp))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                        </Template>
+                        <EditTemplate Context="tp">
+                            <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveRow(tp))">
+                            </RadzenButton>
+                            <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(tp))">
+                            </RadzenButton>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+    </div>
+</div>

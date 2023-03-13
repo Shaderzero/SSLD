@@ -1,0 +1,21 @@
+﻿@using SSLD.Data.DailyReview
+@using SSLD.Tools
+
+<PageDayValue Name="Закачка ПХГ" 
+              Values="_values" 
+              ShowInfo="@ShowValueInfo" 
+              DeleteValue="@DeleteRow" 
+              SaveValue="@SaveRow" 
+              ExportExcel="@ExportToExcel"
+              IsEditable="true" />
+
+<div class="row">
+    <div class="col-12 d-flex justify-content-start">
+        <small>
+            @if (_log != null)
+            {
+                <span>@_log</span>
+            }
+        </small>
+    </div>
+</div>

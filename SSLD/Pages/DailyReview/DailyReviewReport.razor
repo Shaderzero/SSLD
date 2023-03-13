@@ -1,0 +1,47 @@
+﻿@page "/dailyreview/report"
+
+<div class="row">
+    <div class="col-12 d-flex justify-content-start">
+        <h1>Выгрузка оперативной отчётности</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="row">
+            <div class="col-md-6 align-items-center d-flex">
+                <RadzenLabel Text="Начальная дата" />
+            </div>
+            <div class="col-md-6">
+                <RadzenDatePicker @bind-Value="@_startDate" DateFormat="dd/MM/yyyy" />
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="row">
+            <div class="col-md-6 align-items-center d-flex">
+                <RadzenLabel Text="Конечная дата" />
+            </div>
+            <div class="col-md-6">
+                <RadzenDatePicker @bind-Value="@_finishDate" DateFormat="dd/MM/yyyy" />
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="row">
+            <div class="col-md-12 align-items-center d-flex">
+                <RadzenButton Icon="add_circle_outline" class="align-self-center" style="margin-bottom: 10px" ButtonStyle="ButtonStyle.Success" Text="Сформировать" Click="@Run" />
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="row">
+            <div class="col-md-12 align-items-center d-flex">
+                 <InputFile OnChange="@LoadExcelReport" accept=".xlsx, .xlsm, .xls" class="btn btn-primary" style="padding: 0"/>
+                 @*<RadzenFileInput TValue="IBrowserFile" Change="@OnFileInput" Accept=".xlsx, .xlsm, .xls" />*@
+            </div>
+        </div>
+    </div>
+</div>
+
+

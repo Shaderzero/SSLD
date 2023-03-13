@@ -1,0 +1,36 @@
+﻿@using SSLD.Tools
+
+<div class="row">
+    <div class="col-6 d-flex justify-content-start">
+        <h5 class="m-2">@Title</h5>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+        <RadzenButton Icon="add_circle_outline" class="align-self-center" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small" Text="Add"
+                      Click="@Insert" Disabled="!WatchMode"/>
+    </div>
+</div>
+<RadzenDataGrid @ref="_namesGrid" AllowFiltering="true" AllowPaging="true" PageSize="10" AllowColumnResize="true" AllowSorting="WatchMode"
+                Data="@(_names)" TItem="NameObject" RowCreate="@OnCreateRow" 
+                EditMode="DataGridEditMode.Single">
+    <Columns>
+        <RadzenDataGridColumn TItem="NameObject" Property="Name" Title="Наименование">
+            <EditTemplate Context="cName">
+                <RadzenTextBox @bind-Value="cName.Name" Style="width:100%; display: block" Name="наименование..."/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="NameObject" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+            <Template Context="name">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(() => Edit(name))" @onclick:stopPropagation="true" Disabled="!WatchMode">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(() => Delete(name))" @onclick:stopPropagation="true" Disabled="!WatchMode">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="name">
+                <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@(() => Save(name))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(() => Cancel(name))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>

@@ -1,0 +1,98 @@
+﻿@page "/dailyreview/giscountryforecast"
+@using SSLD.Data.DailyReview
+
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="row">
+            <div class="col-12 d-flex justify-content-start">
+                <h1>Прогнозы</h1>
+            </div>
+        </div>
+        <RadzenDataGrid AllowPaging="true" PageSize="25" 
+            AllowSorting="true" Data="@_entities" TItem="Forecast" RowSelect="@OnSelect" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+            <Columns>
+                <RadzenDataGridColumn TItem="Forecast" Property="Name" Title="Кратко">
+
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Forecast" Property="Fullname" Title="Наименование">
+
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="Forecast" Property="ReportDate" Title="Дата" FormatString="{0:dd.MM.yy}">
+
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </div>
+    <div class="col-md-4 px-0">
+        <div class="row">
+            <div class="col-12 d-flex justify-content-start">
+                <h1>Направления</h1>
+            </div>
+        </div>
+        <RadzenDataGrid AllowSorting="true" Data="@_gises" TItem="Gis" ExpandMode="DataGridExpandMode.Single" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+            <Template Context="gis">
+                <RadzenDataGrid AllowColumnResize="true" RowSelect="@OnSelect"
+                                Data="gis.Countries" TItem="GisCountry" Style="overflow-y: auto;">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="GisCountry" Property="Country.Name" Title="Страны"></RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </Template>
+            <Columns>
+                <RadzenDataGridColumn TItem="Gis" Property="Name" Title="Наименование">
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </div>
+    <div class="col-md-4">
+        <div class="row">
+            <div class="col-6 d-flex justify-content-start">
+                <h1>График</h1>
+            </div>
+            <div class="col-6 d-flex justify-content-end">
+                @if (!_editMode)
+                {
+                    <RadzenButton Icon="add_circle_outline" class="align-self-center" style="margin-bottom: 10px" ButtonStyle="ButtonStyle.Success" Text="Add" Click="@InsertRow"/>
+                }
+            </div>
+        </div>
+        <RadzenDataGrid @ref="_valuesGrid" AllowColumnResize="true" AllowPaging="true"
+                        PageSize="25" AllowSorting="!_editMode" Data="@_values" TItem="ForecastGisCountry"
+                        EditMode="DataGridEditMode.Single"
+                        @bind-Value="@_selectedValue" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+            <Columns>
+                <RadzenDataGridColumn TItem="ForecastGisCountry" Property="Month" Title="Месяц">
+                    <Template Context="val">
+                        @($"{val.Month:d}")
+                    </Template>
+                    <EditTemplate Context="val">
+                        <RadzenNumeric @bind-Value="@val.Month" Style="width:100%; display: block"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="ForecastGisCountry" Property="Volume" Title="График">
+                    <Template Context="val">
+                        @Math.Round(val.Value, 3)
+                    </Template>
+                    <EditTemplate Context="val">
+                        <RadzenNumeric @bind-Value="@val.Value" Style="width:100%; display: block"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="ForecastGisCountry" Width="70px">
+                    <Template Context="val">
+                        <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditRow(val))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(val))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </Template>
+                    <EditTemplate Context="val">
+                        <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@(args => SaveRow(val))">
+                        </RadzenButton>
+                        <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(val))">
+                        </RadzenButton>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </div>
+</div>

@@ -1,0 +1,737 @@
+﻿@page "/dailyreview/reportbalance"
+@using SSLD.Data.DailyReview
+
+<RadzenButton Text="Добавить" ButtonStyle="ButtonStyle.Primary" Click="@CreateForecastYear"/>
+
+<div>
+<table class="table table-sm mt-3" style="width: 100%; font-size: smaller;">
+<thead>
+<tr class="text-center">
+    <th style="width: 200px;">Показатель</th>
+    <th>Январь</th>
+    <th>Февраль</th>
+    <th>Март</th>
+    <th>I кв.</th>
+    <th>Апрель</th>
+    <th>Май</th>
+    <th>Июнь</th>
+    <th>II кв.</th>
+    <th>Июль</th>
+    <th>Август</th>
+    <th>Сентябрь</th>
+    <th>III кв.</th>
+    <th>Октябрь</th>
+    <th>Ноябрь</th>
+    <th>Декабрь</th>
+    <th>IV кв.</th>
+    <th>ВСЕГО</th>
+</tr>
+</thead>
+<tbody>
+@if (_firstYear != null)
+{
+    <tr style="font-size: medium;">
+        <td colspan="18" class="text-center fw-bold">
+            Прогноз выполнения баланса по поставке газа в дальнее зарубежье в @_firstYear.Year
+        </td>
+    </tr>
+    @foreach (var item in _firstYear.Forecasts)
+    {
+        <tr class="text-end">
+            <td class="text-start fw-bold pointer" @onclick="() => UpdateValue(item)">@item.Name</td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i;
+                    <td class="align-items-center pointer">
+                        @((item.Values[i - 1]).ToString("F1"))
+                    </td>
+                }
+                <td>
+                    @((item.Values[new Range(d - 1, d + 2)].Sum()).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((item.Values.Sum()).ToString("F1"))
+            </td>
+        </tr>
+        <tr class="text-end">
+            <td class="text-end fst-italic">
+                Среднесуточное значение графика поставок без учета реализации газа в ПХГ, млн. руб. м. в сутки
+            </td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i;
+                    <td class="align-items-center pointer">
+                        @((item.DailyValues[i - 1]).ToString("F1"))
+                    </td>
+                }
+                <td>
+                    @((item.DailyValues[new Range(d - 1, d + 2)].Sum()).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((item.DailyValues.Sum()).ToString("F1"))
+            </td>
+        </tr>
+    }
+    <tr class="text-end fw-bold" style="color: blue">
+        <td class="text-start">
+            Товарный газ ПАО "Газпром" @_firstYear.Year (без учета Китая и ГПШ), млрд. куб. м.
+        </td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGasTovValue(_firstYear, index - 1)">
+                    @((_firstYear.GasTovValues[i - 1] / 1000d).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((_firstYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F1"))
+            </td>
+        }
+        <td>
+            @((_firstYear.GasTovValues.Sum() / 1000d).ToString("F1"))
+        </td>
+    </tr>
+    <tr class="text-end" style="color: darkorange;">
+        <td class="text-end fw-bold">в т.ч. реализация газа в ПХГ, млн. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGasPhgTovValue(_firstYear, index - 1)">
+                    @_firstYear.GasPhgValues[i - 1].ToString("F1")
+                </td>
+            }
+            <td>
+                @_firstYear.GasPhgValues[new Range(d - 1, d + 2)].Sum().ToString("F1")
+            </td>
+        }
+        <td>
+            @_firstYear.GasPhgValues.Sum().ToString("F1")
+        </td>
+    </tr>
+    <tr class="text-end" style="color: darkorange;">
+        <td class="text-end fw-bold">в т.ч. РЕПО, млрд. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateRepoValue(_firstYear, index - 1)">
+                    @_firstYear.RepoValues[i - 1].ToString("F1")
+                </td>
+            }
+            <td>
+                @_firstYear.RepoValues[new Range(d - 1, d + 2)].Sum().ToString("F1")
+            </td>
+        }
+        <td>
+            @_firstYear.RepoValues.Sum().ToString("F1")
+        </td>
+    </tr>
+    <tr class="text-end" style="color: darkblue; font-style: italic">
+        <td class="text-end fw-bold">
+            Фактическое среднесуточное значение поставок без учета реализации газа в ПХГ, млн. куб. м. в сутки
+        </td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td>
+                    @_firstYear.DailyFactNoPhg[index].ToString("F1")
+                </td>
+            }
+            <td>
+                @_firstYear.DailyFactNoPhg[new Range(d - 1, d + 2)].Sum().ToString("F1")
+            </td>
+        }
+        <td>
+            @_firstYear.DailyFactNoPhg.Sum().ToString("F1")
+        </td>
+    </tr>
+    @foreach (var item in _firstYear.Forecasts)
+    {
+        <tr class="text-end">
+            <td class="">+/- к прогнозу @item.Fullname</td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i - 1;
+                    <td>
+                        @((item.Values[index] - _firstYear.GasTovValues[index] / 1000d).ToString("F1"))
+                    </td>
+                }
+                <td>
+                    @((item.Values[new Range(d - 1, d + 2)].Sum() - _firstYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((item.Values.Sum() - _firstYear.DailyFactNoPhg.Sum() / 1000d).ToString("F1"))
+            </td>
+        </tr>
+        <tr class="text-end">
+            <td class="">+/- к прогнозу @item.Fullname %</td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i - 1;
+                    <td>
+                        @((_firstYear.GasTovValues[index] / 1000d / item.Values[index] - 1).ToString("F1") + "%")
+                    </td>
+                }
+                <td>
+                    @((_firstYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / 1000d / item.Values[new Range(d - 1, d + 2)].Sum() - 1).ToString("F1") + "%")
+                </td>
+            }
+            <td>
+                @((_firstYear.DailyFactNoPhg.Sum() / 1000d / item.Values.Sum() - 1).ToString("F1") + "%")
+            </td>
+        </tr>
+    }
+    <tr class="text-end fst-italic">
+        <td class="text-start fw-bold">Газ Gazprom Schweiz @_firstYear.Year, млрд. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGpsValue(_firstYear, index)">
+                    @((_firstYear.GpsValues[index] / 1000d).ToString("F2"))
+                </td>
+            }
+            <td>
+                @((_firstYear.GpsValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F2"))
+            </td>
+        }
+        <td>
+            @((_firstYear.GpsValues.Sum() / 1000d).ToString("F2"))
+        </td>
+    </tr>
+    <tr class="text-end fst-italic">
+        <td class="text-start fw-bold">Поставка в КНР в @_firstYear.Year, млрд. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateChinaValue(_firstYear, index)">
+                    @((_firstYear.ChinaValues[index] / 1000d).ToString("F2"))
+                </td>
+            }
+            <td>
+                @((_firstYear.ChinaValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F2"))
+            </td>
+        }
+        <td>
+            @((_firstYear.ChinaValues.Sum() / 1000d).ToString("F2"))
+        </td>
+    </tr>
+}
+@if (_firstYear != null && _secondYear != null)
+{
+    <tr style="font-size: medium;">
+        <td colspan="18" class="text-center fw-bold">
+        </td>
+    </tr>
+    @foreach (var item in _secondYear.Forecasts)
+    {
+        <tr class="text-end">
+            <td class="text-start fw-bold pointer" @onclick="() => UpdateValue(item)">@item.Name</td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i;
+                    <td class="align-items-center pointer">
+                        @((item.Values[i - 1]).ToString("F1"))
+                    </td>
+                }
+                <td>
+                    @((item.Values[new Range(d - 1, d + 2)].Sum()).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((item.Values.Sum()).ToString("F1"))
+            </td>
+        </tr>
+        <tr class="text-end">
+            <td class="text-end fst-italic">
+                Среднесуточное значение графика поставок без учета реализации газа в ПХГ, млн. руб. м. в сутки
+            </td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i;
+                    <td class="align-items-center pointer">
+                        @((item.DailyValues[i - 1]).ToString("F1"))
+                    </td>
+                }
+                <td>
+                    @((item.DailyValues[new Range(d - 1, d + 2)].Sum()).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((item.DailyValues.Sum()).ToString("F1"))
+            </td>
+        </tr>
+    }
+    <tr class="text-end fw-bold" style="color: blue">
+        <td class="text-start">
+            Товарный газ ПАО "Газпром" @_secondYear.Year (без учета Китая и ГПШ), млрд. куб. м.
+        </td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGasTovValue(_secondYear, index - 1)">
+                    @((_secondYear.GasTovValues[i - 1] / 1000d).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((_secondYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F1"))
+            </td>
+        }
+        <td>
+            @((_secondYear.GasTovValues.Sum() / 1000d).ToString("F1"))
+        </td>
+    </tr>
+    <tr class="text-end" style="color: darkorange;">
+        <td class="text-end fw-bold">в т.ч. реализация газа в ПХГ, млн. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGasPhgTovValue(_secondYear, index - 1)">
+                    @_secondYear.GasPhgValues[i - 1].ToString("F1")
+                </td>
+            }
+            <td>
+                @_secondYear.GasPhgValues[new Range(d - 1, d + 2)].Sum().ToString("F1")
+            </td>
+        }
+        <td>
+            @_secondYear.GasPhgValues.Sum().ToString("F1")
+        </td>
+    </tr>
+    <tr class="text-end" style="color: darkorange;">
+        <td class="text-end fw-bold">в т.ч. РЕПО, млрд. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateRepoValue(_secondYear, index - 1)">
+                    @_secondYear.RepoValues[i - 1].ToString("F1")
+                </td>
+            }
+            <td>
+                @_secondYear.RepoValues[new Range(d - 1, d + 2)].Sum().ToString("F1")
+            </td>
+        }
+        <td>
+            @_secondYear.RepoValues.Sum().ToString("F1")
+        </td>
+    </tr>
+    <tr class="text-end" style="color: darkblue; font-style: italic">
+        <td class="text-end fw-bold">
+            Фактическое среднесуточное значение поставок без учета реализации газа в ПХГ, млн. куб. м. в сутки
+        </td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td>
+                    @_secondYear.DailyFactNoPhg[index].ToString("F1")
+                </td>
+            }
+            <td>
+                @_secondYear.DailyFactNoPhg[new Range(d - 1, d + 2)].Sum().ToString("F1")
+            </td>
+        }
+        <td>
+            @_secondYear.DailyFactNoPhg.Sum().ToString("F1")
+        </td>
+    </tr>
+    @foreach (var item in _secondYear.Forecasts)
+    {
+        <tr class="text-end">
+            <td class="">+/- к прогнозу @item.Fullname</td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i - 1;
+                    <td>
+                        @((item.Values[index] - _secondYear.GasTovValues[index] / 1000d).ToString("F1"))
+                    </td>
+                }
+                <td>
+                    @((item.Values[new Range(d - 1, d + 2)].Sum() - _secondYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((item.Values.Sum() - _secondYear.DailyFactNoPhg.Sum() / 1000d).ToString("F1"))
+            </td>
+        </tr>
+        <tr class="text-end">
+            <td class="">+/- к прогнозу @item.Fullname %</td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i - 1;
+                    <td>
+                        @((_secondYear.GasTovValues[index] / 1000d / item.Values[index] - 1).ToString("F1") + "%")
+                    </td>
+                }
+                <td>
+                    @((_secondYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / 1000d / item.Values[new Range(d - 1, d + 2)].Sum() - 1).ToString("F1") + "%")
+                </td>
+            }
+            <td>
+                @((_secondYear.DailyFactNoPhg.Sum() / 1000d / item.Values.Sum() - 1).ToString("F1") + "%")
+            </td>
+        </tr>
+    }
+    <tr class="text-end">
+        <td class="">+/- поставка @_firstYear.Year к @_secondYear.Year</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGasTovValue(_secondYear, index - 1)">
+                    @(((_firstYear.GasTovValues[i - 1] - _secondYear.GasTovValues[i - 1]) / 1000d).ToString("F1"))
+                </td>
+            }
+            <td>
+                @(((_firstYear.GasTovValues[new Range(d - 1, d + 2)].Sum() - _secondYear.GasTovValues[new Range(d - 1, d + 2)].Sum()) / 1000d).ToString("F1"))
+            </td>
+        }
+        <td>
+            @(((_firstYear.GasTovValues.Sum() - _secondYear.GasTovValues.Sum()) / 1000d).ToString("F1"))
+        </td>
+    </tr>
+    <tr class="text-end">
+        <td class="">+/- поставка @_firstYear.Year к @_secondYear.Year %</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td>
+                    @((_firstYear.GasTovValues[index] / _secondYear.GasTovValues[index] - 1).ToString("F1") + "%")
+                </td>
+            }
+            <td>
+                @((_firstYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / _secondYear.GasTovValues[new Range(d - 1, d + 2)].Sum() - 1).ToString("F1") + "%")
+            </td>
+        }
+        <td>
+            @((_firstYear.DailyFactNoPhg.Sum() / _secondYear.DailyFactNoPhg.Sum() - 1).ToString("F1") + "%")
+        </td>
+    </tr>
+    <tr class="text-end fst-italic">
+        <td class="text-start fw-bold">Газ Gazprom Schweiz @_secondYear.Year, млрд. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGpsValue(_secondYear, index)">
+                    @((_secondYear.GpsValues[index] / 1000d).ToString("F2"))
+                </td>
+            }
+            <td>
+                @((_secondYear.GpsValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F2"))
+            </td>
+        }
+        <td>
+            @((_secondYear.GpsValues.Sum() / 1000d).ToString("F2"))
+        </td>
+    </tr>
+    <tr class="text-end fst-italic">
+        <td class="text-start fw-bold">Поставка в КНР в @_secondYear.Year, млрд. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateChinaValue(_secondYear, index)">
+                    @((_secondYear.ChinaValues[index] / 1000d).ToString("F2"))
+                </td>
+            }
+            <td>
+                @((_secondYear.ChinaValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F2"))
+            </td>
+        }
+        <td>
+            @((_secondYear.ChinaValues.Sum() / 1000d).ToString("F2"))
+        </td>
+    </tr>
+}
+@if (_firstYear != null && _thirdYear != null)
+{
+    <tr style="font-size: medium;">
+        <td colspan="18" class="text-center fw-bold">
+        </td>
+    </tr>
+    @foreach (var item in _thirdYear.Forecasts)
+    {
+        <tr class="text-end">
+            <td class="text-start fw-bold pointer" @onclick="() => UpdateValue(item)">@item.Name</td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i;
+                    <td class="align-items-center pointer">
+                        @((item.Values[i - 1]).ToString("F1"))
+                    </td>
+                }
+                <td>
+                    @((item.Values[new Range(d - 1, d + 2)].Sum()).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((item.Values.Sum()).ToString("F1"))
+            </td>
+        </tr>
+        <tr class="text-end">
+            <td class="text-end fst-italic">
+                Среднесуточное значение графика поставок без учета реализации газа в ПХГ, млн. руб. м. в сутки
+            </td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i;
+                    <td class="align-items-center pointer">
+                        @((item.DailyValues[i - 1]).ToString("F1"))
+                    </td>
+                }
+                <td>
+                    @((item.DailyValues[new Range(d - 1, d + 2)].Sum()).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((item.DailyValues.Sum()).ToString("F1"))
+            </td>
+        </tr>
+    }
+    <tr class="text-end fw-bold" style="color: blue">
+        <td class="text-start">
+            Товарный газ ПАО "Газпром" @_thirdYear.Year (без учета Китая и ГПШ), млрд. куб. м.
+        </td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGasTovValue(_thirdYear, index - 1)">
+                    @((_secondYear.GasTovValues[i - 1] / 1000d).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((_secondYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F1"))
+            </td>
+        }
+        <td>
+            @((_secondYear.GasTovValues.Sum() / 1000d).ToString("F1"))
+        </td>
+    </tr>
+    <tr class="text-end" style="color: darkorange;">
+        <td class="text-end fw-bold">в т.ч. реализация газа в ПХГ, млн. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGasPhgTovValue(_thirdYear, index - 1)">
+                    @_thirdYear.GasPhgValues[i - 1].ToString("F1")
+                </td>
+            }
+            <td>
+                @_thirdYear.GasPhgValues[new Range(d - 1, d + 2)].Sum().ToString("F1")
+            </td>
+        }
+        <td>
+            @_thirdYear.GasPhgValues.Sum().ToString("F1")
+        </td>
+    </tr>
+    <tr class="text-end" style="color: darkorange;">
+        <td class="text-end fw-bold">в т.ч. РЕПО, млрд. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateRepoValue(_thirdYear, index - 1)">
+                    @_thirdYear.RepoValues[i - 1].ToString("F1")
+                </td>
+            }
+            <td>
+                @_thirdYear.RepoValues[new Range(d - 1, d + 2)].Sum().ToString("F1")
+            </td>
+        }
+        <td>
+            @_thirdYear.RepoValues.Sum().ToString("F1")
+        </td>
+    </tr>
+    <tr class="text-end" style="color: darkblue; font-style: italic">
+        <td class="text-end fw-bold">
+            Фактическое среднесуточное значение поставок без учета реализации газа в ПХГ, млн. куб. м. в сутки
+        </td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td>
+                    @_thirdYear.DailyFactNoPhg[index].ToString("F1")
+                </td>
+            }
+            <td>
+                @_thirdYear.DailyFactNoPhg[new Range(d - 1, d + 2)].Sum().ToString("F1")
+            </td>
+        }
+        <td>
+            @_thirdYear.DailyFactNoPhg.Sum().ToString("F1")
+        </td>
+    </tr>
+    @foreach (var item in _thirdYear.Forecasts)
+    {
+        <tr class="text-end">
+            <td class="">+/- к прогнозу @item.Fullname</td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i - 1;
+                    <td>
+                        @((item.Values[index] - _thirdYear.GasTovValues[index] / 1000d).ToString("F1"))
+                    </td>
+                }
+                <td>
+                    @((item.Values[new Range(d - 1, d + 2)].Sum() - _thirdYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F1"))
+                </td>
+            }
+            <td>
+                @((item.Values.Sum() - _thirdYear.DailyFactNoPhg.Sum() / 1000d).ToString("F1"))
+            </td>
+        </tr>
+        <tr class="text-end">
+            <td class="">+/- к прогнозу @item.Fullname %</td>
+            @for (var d = 1; d <= 12; d = d + 3)
+            {
+                @for (var i = d; i <= d + 2; i++)
+                {
+                    var index = i - 1;
+                    <td>
+                        @((_thirdYear.GasTovValues[index] / 1000d / item.Values[index] - 1).ToString("F1") + "%")
+                    </td>
+                }
+                <td>
+                    @((_thirdYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / 1000d / item.Values[new Range(d - 1, d + 2)].Sum() - 1).ToString("F1") + "%")
+                </td>
+            }
+            <td>
+                @((_thirdYear.DailyFactNoPhg.Sum() / 1000d / item.Values.Sum() - 1).ToString("F1") + "%")
+            </td>
+        </tr>
+    }
+    <tr class="text-end">
+        <td class="">+/- поставка @_firstYear.Year к @_thirdYear.Year</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGasTovValue(_thirdYear, index - 1)">
+                    @(((_firstYear.GasTovValues[i - 1] - _thirdYear.GasTovValues[i - 1]) / 1000d).ToString("F1"))
+                </td>
+            }
+            <td>
+                @(((_firstYear.GasTovValues[new Range(d - 1, d + 2)].Sum() - _thirdYear.GasTovValues[new Range(d - 1, d + 2)].Sum()) / 1000d).ToString("F1"))
+            </td>
+        }
+        <td>
+            @(((_firstYear.GasTovValues.Sum() - _thirdYear.GasTovValues.Sum()) / 1000d).ToString("F1"))
+        </td>
+    </tr>
+    <tr class="text-end">
+        <td class="">+/- поставка @_firstYear.Year к @_thirdYear.Year %</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td>
+                    @((_firstYear.GasTovValues[index] / _thirdYear.GasTovValues[index] - 1).ToString("F1") + "%")
+                </td>
+            }
+            <td>
+                @((_firstYear.GasTovValues[new Range(d - 1, d + 2)].Sum() / _thirdYear.GasTovValues[new Range(d - 1, d + 2)].Sum() - 1).ToString("F1") + "%")
+            </td>
+        }
+        <td>
+            @((_firstYear.DailyFactNoPhg.Sum() / _thirdYear.DailyFactNoPhg.Sum() - 1).ToString("F1") + "%")
+        </td>
+    </tr>
+    <tr class="text-end fst-italic">
+        <td class="text-start fw-bold">Газ Gazprom Schweiz @_thirdYear.Year, млрд. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateGpsValue(_thirdYear, index)">
+                    @((_thirdYear.GpsValues[index] / 1000d).ToString("F2"))
+                </td>
+            }
+            <td>
+                @((_thirdYear.GpsValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F2"))
+            </td>
+        }
+        <td>
+            @((_thirdYear.GpsValues.Sum() / 1000d).ToString("F2"))
+        </td>
+    </tr>
+    <tr class="text-end fst-italic">
+        <td class="text-start fw-bold">Поставка в КНР в @_thirdYear.Year, млрд. куб. м.</td>
+        @for (var d = 1; d <= 12; d = d + 3)
+        {
+            @for (var i = d; i <= d + 2; i++)
+            {
+                var index = i - 1;
+                <td class="align-items-center pointer" @ondblclick="() => UpdateChinaValue(_thirdYear, index)">
+                    @((_thirdYear.ChinaValues[index] / 1000d).ToString("F2"))
+                </td>
+            }
+            <td>
+                @((_thirdYear.ChinaValues[new Range(d - 1, d + 2)].Sum() / 1000d).ToString("F2"))
+            </td>
+        }
+        <td>
+            @((_thirdYear.ChinaValues.Sum() / 1000d).ToString("F2"))
+        </td>
+    </tr>
+}
+</tbody>
+</table>
+</div>

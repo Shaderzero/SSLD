@@ -1,0 +1,109 @@
+﻿@page "/references/filetypesetting"
+@using SSLD.Data.DailyReview
+@using SSLD.Pages.Shared
+
+<div class="row">
+    <div class="col-6 d-flex justify-content-start">
+        <h1>Типы файлов</h1>
+    </div>
+    <div class="col-6 d-flex justify-content-end">
+        <RadzenButton Icon="add_circle_outline" class="align-self-center my-1" ButtonStyle="ButtonStyle.Success" Text="Add" Click="InsertRow" Disabled="!_watchMode"/>
+    </div>
+</div>
+<RadzenDataGrid @ref="_fileTypesGrid" AllowColumnResize="true"
+                AllowSorting="_watchMode" Data="_fts" TItem="FileTypeSetting" ExpandMode="DataGridExpandMode.Single" RowExpand="RowExpand"
+                @bind-Value="_selectedFileType"
+                EditMode="DataGridEditMode.Single" RowUpdate="OnUpdateRow" RowCreate="OnCreateRow" Style="height: calc(100vh - 5rem); overflow-y: auto;">
+    <Template Context="fts">
+        <div class="row">
+            <div class="col">
+                <ComponentNameObject Title="Включает"
+                                     Names="@_mustHaves"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveMustHave"/>
+            </div>
+            <div class="col">
+                <ComponentNameObject Title="Исключает"
+                                     Names="@_notHaves"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveNotHave"/>
+            </div>
+            <div class="col">
+                <ComponentNameObject Title="Страна"
+                                     Names="@_countryEntries"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveCountry"/>
+            </div>
+            <div class="col">
+                <ComponentNameObject Title="Направление"
+                                     Names="@_gisEntries"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveGis"/>
+            </div>
+            <div class="col">
+                <ComponentNameObject Title="Дата"
+                                     Names="@_dataEntries"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveDate"/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <ComponentNameObject Title="Заявлено"
+                                     Names="@_requestEntries"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveRequest"/>
+            </div>
+            <div class="col">
+                <ComponentNameObject Title="Выделено"
+                                     Names="@_allocatedEntries"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveAllocated"/>
+            </div>
+            <div class="col">
+                <ComponentNameObject Title="Оценка"
+                                     Names="@_estimatedEntries"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveEstimated"/>
+            </div>
+            <div class="col">
+                <ComponentNameObject Title="Факт"
+                                     Names="@_factEntries"
+                                     @bind-WatchMode="_watchMode"
+                                     SaveValue="@SaveFact"/>
+            </div>
+        </div>
+    </Template>
+    <Columns>
+        <RadzenDataGridColumn Width="70px" TItem="FileTypeSetting" Property="Id" Title="ID"/>
+        <RadzenDataGridColumn TItem="FileTypeSetting" Property="Name" Title="Наименование">
+            <EditTemplate Context="fts">
+                <RadzenTextBox @bind-Value="fts.Name" Style="width:100%; display: block" Name="наименование..."/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="FileTypeSetting" Property="TypeName" Title="Парсер">
+            <EditTemplate Context="fts">
+                <RadzenDropDown Data=@_typeList @bind-Value=@fts.TypeName Style="width:100%; display: block"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="FileTypeSetting" Property="LastHour" Title="Последний час">
+            <EditTemplate Context="fts">
+                <RadzenNumeric @bind-Value="fts.LastHour" Style="width:100%; display: block" Name="час..."/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="FileTypeSetting" Context="sampleBlazorModelsSampleOrder" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+            <Template Context="fts">
+                <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditRow(fts))">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(fts))">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="fts">
+                <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveRow(fts))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(fts))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
